@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"> <!-- Start in dark mode by default -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Threat Analyzer</title>
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- TensorFlow.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+    <!-- Google Fonts: Roboto Mono for a terminal feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the futuristic theme */
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            background-image:
+                linear-gradient(rgba(13, 17, 23, 0.95), rgba(13, 17, 23, 0.95)),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%23161b22' fill-opacity='0.6'%3E%3Crect x='0' y='0' width='100' height='1'/%3E%3Crect x='0' y='0' width='1' height='100'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+        }
+        .btn-primary {
+            background: #238636;
+            border-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease-in-out;
+            text-shadow: 0 0 5px rgba(42, 252, 152, 0.5);
+            box-shadow: 0 0 15px rgba(35, 134, 54, 0.3);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #2ea043;
+            box-shadow: 0 0 25px rgba(35, 134, 54, 0.6);
+        }
+        .btn-primary:disabled {
+            background: #30363d;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .glowing-border {
+            border-color: #30363d;
+        }
+        .glowing-border:focus-within {
+            border-color: #238636;
+            box-shadow: 0 0 10px rgba(35, 134, 54, 0.5);
+        }
+        #result-gauge-circle {
+            stroke-dasharray: 565.48; /* 2 * PI * 90 */
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+        .settings-modal {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .settings-modal.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+    </style>
+    <script>
+        // Set theme based on localStorage or system preference
+        if (localStorage.theme === 'light' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+          document.documentElement.classList.remove('dark')
+        } else {
+          document.documentElement.classList.add('dark')
+        }
+    </script>
+</head>
+<body class="min-h-screen p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- HEADER -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-3">
+                <svg class="w-8 h-8 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <h1 class="text-2xl font-bold text-gray-100">URL Threat Analyzer</h1>
+            </div>
+            <button id="settings-button" class="p-2 rounded-full hover:bg-gray-700 transition">
+                <svg class="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.26.716.53 1.003l.824.824c.27.27.629.426 1.003.53l1.28.213c.542.09.94.56.94 1.11v2.594c0 .55-.398 1.02-.94 1.11l-1.28.213c-.374.063-.716.26-1.003.53l-.824.824c-.27.27-.426.629-.53 1.003l-.213 1.28c-.09.542-.56.94-1.11.94h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.26-.716-.53-1.003l-.824-.824c-.27-.27-.629.426-1.003-.53l-1.28-.213c-.542-.09-.94-.56-.94-1.11V9.594c0 .55.398 1.02.94-1.11l1.28-.213c.374-.063.716.26 1.003.53l.824-.824c.27.27.426.629.53 1.003l.213-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
+        </header>
+
+        <!-- MAIN GRID -->
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- LEFT PANEL: INPUT -->
+            <div class="lg:col-span-3">
+                <div class="glass-panel p-6 rounded-lg h-full flex flex-col">
+                    <h2 class="text-lg font-semibold text-gray-200 mb-4">Input Vector</h2>
+                    <p class="text-sm text-gray-400 mb-6">Enter URL for analysis. All processing occurs locally.</p>
+                    <div class="relative glowing-border rounded-md transition-all">
+                        <textarea id="urlInput" class="w-full bg-gray-900 border-2 border-transparent rounded-md p-4 pr-24 text-gray-200 focus:outline-none transition resize-none h-40" placeholder="https://..."></textarea>
+                        <button id="pasteButton" class="absolute top-3 right-3 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-1 px-3 rounded-md transition">PASTE</button>
+                    </div>
+                    <button id="analyzeButton" class="w-full mt-6 btn-primary text-white font-bold py-3 px-4 rounded-md flex items-center justify-center gap-2" disabled>
+                        <span>[ SCANNING... ]</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: RESULTS -->
+            <div class="lg:col-span-2">
+                <div class="glass-panel p-6 rounded-lg h-full">
+                    <h2 class="text-lg font-semibold text-gray-200 mb-4">Threat Analysis</h2>
+                    <div id="result-placeholder" class="text-center text-gray-500 py-10">
+                        <svg class="mx-auto h-12 w-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 21v-1.5M15.75 3v1.5m0 16.5v-1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15zm0 0v15" /></svg>
+                        <p class="mt-4 text-sm">Awaiting URL input for analysis...</p>
+                    </div>
+                    <div id="result-widget" class="hidden">
+                         <div class="relative w-48 h-48 mx-auto flex items-center justify-center">
+                            <svg class="transform -rotate-90" width="100%" height="100%" viewBox="0 0 200 200">
+                                <circle cx="100" cy="100" r="90" stroke="#30363d" stroke-width="15" fill="transparent" />
+                                <circle id="result-gauge-circle" cx="100" cy="100" r="90" stroke="#238636" stroke-width="15" fill="transparent" stroke-linecap="round" style="stroke-dashoffset: 565.48;"/>
+                            </svg>
+                            <div class="absolute text-center">
+                                <span id="result-score" class="text-4xl font-bold">0%</span>
+                                <span class="text-sm text-gray-400 block">Confidence</span>
+                            </div>
+                        </div>
+                        <div id="result-label" class="text-center mt-4 text-2xl font-semibold"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- FOOTER / STATUS -->
+        <footer id="modelStatus" class="mt-8 text-center text-sm p-3 glass-panel rounded-md flex items-center justify-center gap-3">
+             <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-400"></div>
+            <span>INITIALIZING AI CORE... PLEASE WAIT.</span>
+        </footer>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel rounded-lg w-full max-w-md border border-gray-700 shadow-2xl">
+            <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-xl font-semibold">Settings</h2>
+                <button id="close-settings-button" class="p-1 rounded-full hover:bg-gray-700">&times;</button>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- Theme Settings -->
+                <div>
+                    <h3 class="font-medium mb-2 text-gray-300">Theme</h3>
+                    <div class="flex items-center gap-4">
+                        <label for="theme-toggle" class="flex items-center cursor-pointer">
+                            <span class="mr-3 text-sm text-gray-400">Light</span>
+                            <div class="relative">
+                                <input type="checkbox" id="theme-toggle" class="sr-only">
+                                <div class="block bg-gray-600 w-14 h-8 rounded-full"></div>
+                                <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                            </div>
+                            <span class="ml-3 text-sm text-gray-400">Dark</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- About Section -->
+                <div>
+                    <h3 class="font-medium mb-2 text-gray-300">About</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        This tool leverages a client-side TensorFlow.js model to analyze URLs. Your privacy is guaranteed as no data is ever sent to a server for analysis. The AI model has been trained to detect patterns indicative of spam and malicious links.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- MODEL & UI CONSTANTS ---
+        const MAX_LEN = 200;
+        const MODEL_JSON_URL = '/static/model.json'; // Relative path
+        const CHAR_INDEX_URL = '/static/char_index.json'; // Relative path
+
+        // --- DOM ELEMENTS ---
+        const urlInput = document.getElementById('urlInput');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const pasteButton = document.getElementById('pasteButton');
+        const modelStatus = document.getElementById('modelStatus');
+        const resultPlaceholder = document.getElementById('result-placeholder');
+        const resultWidget = document.getElementById('result-widget');
+        const resultGaugeCircle = document.getElementById('result-gauge-circle');
+        const resultScore = document.getElementById('result-score');
+        const resultLabel = document.getElementById('result-label');
+        const settingsButton = document.getElementById('settings-button');
+        const closeSettingsButton = document.getElementById('close-settings-button');
+        const settingsModal = document.getElementById('settings-modal');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // --- APP STATE ---
+        let model = null;
+        let charIndex = null;
+        
+        // --- PREPROCESSING LOGIC ---
+        function preprocessUrl(url, charIndex, maxLength) {
+            let sequence = url.split('').map(char => charIndex[char] || 0);
+            if (sequence.length > maxLength) {
+                sequence = sequence.slice(0, maxLength);
+            } else {
+                const padding = Array(maxLength - sequence.length).fill(0);
+                sequence = padding.concat(sequence);
+            }
+            return sequence;
+        }
+
+        // --- PREDICTION LOGIC ---
+        async function analyzeUrl() {
+            const url = urlInput.value.trim();
+            if (!url) return;
+            const sequence = preprocessUrl(url, charIndex, MAX_LEN);
+            const tensor = tf.tensor2d([sequence]);
+            try {
+                const prediction = model.predict(tensor);
+                const score = prediction.dataSync()[0];
+                displayResult(score);
+            } catch (error) {
+                console.error("Prediction Error:", error);
+                resultLabel.textContent = "Analysis Failed";
+            } finally {
+                tensor.dispose();
+            }
+        }
+
+        // --- UI UPDATE LOGIC ---
+        function displayResult(score) {
+            const isSpam = score > 0.5;
+            const confidence = isSpam ? score : 1 - score;
+            const percentage = Math.round(confidence * 100);
+            const circumference = 2 * Math.PI * 90; // 565.48
+            const offset = circumference - (confidence * circumference);
+
+            resultPlaceholder.classList.add('hidden');
+            resultWidget.classList.remove('hidden');
+            
+            resultScore.textContent = `${percentage}%`;
+            resultGaugeCircle.style.strokeDashoffset = offset;
+
+            if (isSpam) {
+                resultLabel.textContent = "THREAT DETECTED";
+                resultLabel.className = "text-center mt-4 text-2xl font-semibold text-red-400";
+                resultGaugeCircle.style.stroke = "#f87171"; // red-400
+            } else {
+                resultLabel.textContent = "SYSTEMS CLEAR";
+                resultLabel.className = "text-center mt-4 text-2xl font-semibold text-green-400";
+                resultGaugeCircle.style.stroke = "#4ade80"; // green-400
+            }
+        }
+
+        // --- THEME & SETTINGS LOGIC ---
+        function applyTheme(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeToggle.checked = true;
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeToggle.checked = false;
+            }
+        }
+
+        function setupSettings() {
+            settingsButton.addEventListener('click', () => settingsModal.classList.remove('hidden'));
+            closeSettingsButton.addEventListener('click', () => settingsModal.classList.add('hidden'));
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    settingsModal.classList.add('hidden');
+                }
+            });
+
+            themeToggle.addEventListener('change', (e) => {
+                applyTheme(e.target.checked);
+            });
+
+            // Set initial toggle state
+            themeToggle.checked = document.documentElement.classList.contains('dark');
+        }
+
+        // --- MAIN INITIALIZATION ---
+        async function main() {
+            try {
+                const [loadedModel, charIndexResponse] = await Promise.all([
+                    tf.loadLayersModel(MODEL_JSON_URL),
+                    fetch(CHAR_INDEX_URL)
+                ]);
+                model = loadedModel;
+                charIndex = await charIndexResponse.json();
+
+                modelStatus.innerHTML = `
+                    <svg class="w-5 h-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>AI CORE ONLINE. SYSTEM READY.</span>
+                `;
+                analyzeButton.disabled = false;
+                analyzeButton.querySelector('span').textContent = '[ ANALYZE ]';
+
+            } catch (error) {
+                console.error('Failed to load model or char index:', error);
+                modelStatus.innerHTML = `
+                   <svg class="w-5 h-5 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+                    <span>CRITICAL ERROR: AI CORE FAILED TO INITIALIZE.</span>
+                `;
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        analyzeButton.addEventListener('click', analyzeUrl);
+        pasteButton.addEventListener('click', async () => {
+            try {
+                urlInput.value = await navigator.clipboard.readText();
+            } catch (err) {
+                console.error('Failed to read clipboard:', err);
+            }
+        });
+        
+        // --- STARTUP ---
+        setupSettings();
+        main();
+    </script>
+</body>
+</html>
+
