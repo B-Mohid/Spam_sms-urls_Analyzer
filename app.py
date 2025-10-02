@@ -2,42 +2,41 @@ import streamlit as st
 import streamlit.components.v1 as components
 import os
 
-# --- Page Configuration ---
-# This must be the first Streamlit command in your script.
-st.set_page_config(layout="wide", page_title="URL Threat Analyzer")
+# Set Streamlit page configuration for a wide, borderless layout
+st.set_page_config(layout="wide", page_title="Spam Classifier AI")
 
-# --- Path Configuration ---
-# Get the absolute path to the directory where this script is located.
-_RELEASE = True # Set to False for local development
-if not _RELEASE:
-    _root_dir = os.path.dirname(os.path.abspath(__file__))
-    _static_dir = os.path.join(_root_dir, "static")
-    _frontend_dir = os.path.join(_root_dir, "frontend")
-else:
-    _root_dir = os.path.dirname(os.path.abspath(__file__))
-    _static_dir = os.path.join(_root_dir, "static")
-    _frontend_dir = os.path.join(_root_dir, "frontend")
+# --- HIDE STREAMLIT STYLE ---
+# Hide the default Streamlit header, footer, and menu
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            .block-container {
+                padding-top: 0rem;
+                padding-bottom: 0rem;
+                padding-left: 0rem;
+                padding-right: 0rem;
+            }
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
+# --- GET HTML CONTENT ---
+# Construct the path to the index.html file
+# This assumes your script `app.py` is in the root, and `index.html` is in `static/`
+frontend_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
 
-# --- Serve the Frontend ---
-# Check if the index.html file exists.
-frontend_path = os.path.join(_frontend_dir, "index.html")
-if not os.path.exists(frontend_path):
-    st.error("Fatal Error: `frontend/index.html` not found. Please ensure the file exists in the correct directory.")
-else:
-    # Read the HTML file
+# Read the content of the index.html file
+html_content = ""
+try:
     with open(frontend_path, "r", encoding="utf-8") as f:
         html_content = f.read()
+except FileNotFoundError:
+    st.error("Frontend file not found! Ensure 'static/index.html' exists.")
 
-    # --- Serve the Static Model Files ---
-    # Streamlit serves files from a directory named 'static' by default at the root level.
-    # The frontend JavaScript will fetch from '/static/model.json' etc.
-    # This configuration works seamlessly with Streamlit's server.
-
-    # Render the HTML using Streamlit Components
-    components.html(html_content, height=1024, scrolling=True)
-
-    # Add a footer to confirm the app is running via Streamlit
-    st.markdown("---")
-    st.info("Powered by Streamlit. Analysis is performed 100% in your browser.")
-
+# --- RENDER HTML ---
+# Embed the HTML in the Streamlit app.
+# `scrolling=False` is important for single-page apps.
+# Height is set to a high value to ensure it can fill the viewport.
+components.html(html_content, height=1000, scrolling=False)
