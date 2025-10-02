@@ -25,8 +25,12 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 # --- GET HTML CONTENT ---
 # Construct the path to the index.html file.
 # CORRECTED: This now correctly looks for index.html in the same directory as app.py.
+<<<<<<< HEAD
 frontend_path = os.path.join(os.path.dirname(__file__), "index.html")
 
+=======
+frontend_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
+>>>>>>> 6769ce056c0aa2d81be80e294e91af0ddd4c91c4
 # Read the content of the index.html file
 html_content = ""
 try:

@@ -41,7 +41,7 @@ Instructions:
 
 Clone the repository:
 
-git clone <https://github.com/B-Mohid/Spam_Message_classifier>
+git clone <https://github.com/B-Mohid/Spam_sms-urls_Analyzer>
 cd <Spam_sms&urls_Analyzer>
 
 Create and activate a virtual environment (recommended):
