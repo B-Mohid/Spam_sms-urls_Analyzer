@@ -17,55 +17,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
     <style>
-        /* Custom Styles for the Futuristic Look */
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #0a0a0a; /* Off-black for depth */
+            background-color: #0a0a0a;
         }
-
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        /* Glassmorphism and Neon Glow Effect */
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
         .glass-pane {
-            background: rgba(20, 20, 22, 0.6); /* Semi-transparent dark background */
+            background: rgba(20, 20, 22, 0.6);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(110, 227, 255, 0.2);
         }
-        
         .neon-glow-cyan {
-            box-shadow: 0 0 5px rgba(0, 255, 255, 0.4), 
-                        0 0 10px rgba(0, 255, 255, 0.3), 
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.4),
+                        0 0 10px rgba(0, 255, 255, 0.3),
                         0 0 20px rgba(0, 255, 255, 0.2);
         }
-
         .neon-glow-pink {
-            box-shadow: 0 0 5px rgba(255, 0, 150, 0.4), 
-                        0 0 10px rgba(255, 0, 150, 0.3), 
+            box-shadow: 0 0 5px rgba(255, 0, 150, 0.4),
+                        0 0 10px rgba(255, 0, 150, 0.3),
                         0 0 20px rgba(255, 0, 150, 0.2);
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #111;
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
         ::-webkit-scrollbar-thumb {
             background: rgba(0, 255, 255, 0.5);
             border-radius: 4px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 255, 255, 0.8);
-        }
-
-        /* Custom Radio Buttons */
-        .radio-label input[type="radio"] {
-            display: none;
-        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 255, 0.8); }
+        .radio-label input[type="radio"] { display: none; }
         .radio-label span {
             padding: 8px 16px;
             border: 1px solid rgba(0, 255, 255, 0.4);
@@ -80,13 +60,7 @@
             font-weight: 500;
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
-
-        /* Result gauge animation */
-        .gauge-dial {
-            transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        
-        /* Loading Spinner */
+        .gauge-dial { transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1); }
         .loader {
             border: 4px solid #f3f3f330;
             border-top: 4px solid #00ffff;
@@ -95,22 +69,18 @@
             height: 40px;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
     </style>
 </head>
-
 <body class="text-gray-200">
-
     <!-- Main Container -->
     <div class="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-cover bg-center" style="background-image: url('https://placehold.co/1920x1080/0a0a0a/1E1E1E?text=.')">
 
         <!-- Loading Overlay -->
-        <div id="loading-overlay" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50 transition-opacity duration-500">
+        <div id="loading-overlay" role="status" aria-busy="true" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50 transition-opacity duration-500">
             <div class="loader"></div>
             <p id="loading-status" class="mt-4 font-orbitron text-cyan-300">INITIALIZING AI CORE...</p>
         </div>
@@ -126,11 +96,11 @@
 
             <div class="glass-pane rounded-2xl p-6 md:p-8">
                 <!-- Tabs -->
-                <div class="flex border-b border-cyan-300/20 mb-6">
-                    <button class="tab-btn active px-4 py-2 text-cyan-300 border-b-2 border-cyan-300 font-orbitron" onclick="showTab('analyzer')">ANALYZER</button>
-                    <button class="tab-btn px-4 py-2 text-gray-400" onclick="showTab('about')">ABOUT</button>
-                    <button class="tab-btn px-4 py-2 text-gray-400" onclick="showTab('addToDevice')">ADD TO DEVICE</button>
-                </div>
+                <nav class="flex border-b border-cyan-300/20 mb-6" role="tablist">
+                    <button class="tab-btn active px-4 py-2 text-cyan-300 border-b-2 border-cyan-300 font-orbitron" onclick="showTab('analyzer')" role="tab" aria-selected="true">ANALYZER</button>
+                    <button class="tab-btn px-4 py-2 text-gray-400" onclick="showTab('about')" role="tab" aria-selected="false">ABOUT</button>
+                    <button class="tab-btn px-4 py-2 text-gray-400" onclick="showTab('addToDevice')" role="tab" aria-selected="false">ADD TO DEVICE</button>
+                </nav>
 
                 <!-- Analyzer Tab -->
                 <div id="analyzer" class="tab-content">
@@ -141,21 +111,22 @@
                             <span>Analyze SMS</span>
                         </label>
                         <label class="radio-label">
-                            <input type="radio" name="modelType" value="url">
+                            <input type="radio" name="modelType" value="url" onchange="updateUIForModel()">
                             <span>Analyze URL</span>
                         </label>
                     </div>
 
                     <!-- Input Area -->
                     <div class="relative mb-4">
-                        <textarea id="text-input" class="w-full h-32 p-4 bg-black/30 border border-cyan-300/30 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 outline-none transition duration-200 resize-none" placeholder="Enter SMS message to analyze..."></textarea>
+                        <label for="text-input" class="sr-only">Message or URL</label>
+                        <textarea id="text-input" class="w-full h-32 p-4 bg-black/30 border border-cyan-300/30 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 outline-none transition-all duration-300 resize-none" placeholder="Enter SMS message to analyze..."></textarea>
                     </div>
                     
                     <div class="flex flex-col md:flex-row items-center gap-4">
-                        <button id="analyze-btn" class="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-orbitron font-bold py-3 px-8 rounded-full transition-all duration-300 neon-glow-cyan">
+                        <button id="analyze-btn" type="button" class="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-orbitron font-bold py-3 px-8 rounded-full transition-all duration-300 neon-glow-cyan">
                             ANALYZE
                         </button>
-                        <button id="clear-btn" class="w-full md:w-auto bg-pink-500/80 hover:bg-pink-500 text-black font-orbitron font-bold py-3 px-8 rounded-full transition-all duration-300 neon-glow-pink">
+                        <button id="clear-btn" type="button" class="w-full md:w-auto bg-pink-500/80 hover:bg-pink-500 text-black font-orbitron font-bold py-3 px-8 rounded-full transition-all duration-300 neon-glow-pink">
                             CLEAR
                         </button>
                     </div>
@@ -166,8 +137,8 @@
                         <div class="relative w-48 h-24 mx-auto mb-4">
                             <svg class="w-full h-full" viewBox="0 0 100 50">
                                 <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" stroke-linecap="round"/>
-                                <path id="gauge-arc" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#E5E7EB" stroke-width="8" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="125.6" style="transition: stroke-dashoffset 1s ease-out, stroke 1s ease-out;"/>
-                                <path id="gauge-dial" class="gauge-dial" d="M 50 50 L 50 10" stroke="#fff" stroke-width="2" stroke-linecap="round" style="transform-origin: 50px 50px; transform: rotate(-90deg)"/>
+                                <path id="gauge-arc" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#E5E7EB" stroke-width="8" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="125.6"/>
+                                <path id="gauge-dial" class="gauge-dial" d="M 50 50 L 50 10" stroke="#fff" stroke-width="2" stroke-linecap="round" style="transform-origin: 50px 50px; transform: rotate(-90deg);"/>
                             </svg>
                             <div class="absolute inset-0 flex items-end justify-center">
                                 <span id="result-percentage" class="font-orbitron text-3xl">0%</span>
@@ -181,7 +152,7 @@
                 <!-- About Tab -->
                 <div id="about" class="tab-content hidden prose prose-invert prose-p:text-gray-300 prose-headings:text-cyan-300 prose-headings:font-orbitron max-w-full">
                     <h2>About Spam Classifier AI</h2>
-                    <p>This application leverages the power of machine learning, directly in your browser, to protect you from potential threats in SMS messages and URLs. By using two distinct, expertly trained models, it provides specialized analysis for different types of content.</p>
+                    <p>This application leverages the power of machine learning, directly in your browser, to protect you from potential threats in SMS messages and URLs. By using two distinct, expert models (one for SMS, one for URLs), it can accurately detect spam and malicious links—all without sending your data to a server.</p>
                     <h4>Key Technologies</h4>
                     <ul>
                         <li><strong>TensorFlow.js:</strong> Enables running machine learning models entirely on the client-side, ensuring your data never leaves your device.</li>
@@ -238,15 +209,13 @@
         };
 
         // --- IMPORTANT: MODEL PATHS ---
-        // CORRECTED: Paths now point to a 'models' subdirectory.
-        // You MUST create a 'models' folder next to this HTML file and place your model assets inside it.
         const MODELS = {
             sms: {
                 model: null,
                 index: null,
                 modelPath: 'models/sms_model.json',
                 indexPath: 'models/sms_word_index.json',
-                maxLength: 150, // Typical max length for SMS
+                maxLength: 150,
                 placeholder: 'Enter SMS message to analyze...'
             },
             url: {
@@ -254,7 +223,7 @@
                 index: null,
                 modelPath: 'models/url_model.json',
                 indexPath: 'models/url_char_index.json',
-                maxLength: 200, // Typical max length for URLs
+                maxLength: 200,
                 placeholder: 'Enter URL to analyze...'
             }
         };
@@ -264,14 +233,13 @@
             UI.tabContents.forEach(content => content.classList.add('hidden'));
             document.getElementById(tabName).classList.remove('hidden');
             
-            UI.tabs.forEach(tab => tab.classList.remove('active', 'text-cyan-300', 'border-cyan-300'));
             UI.tabs.forEach(tab => {
-                if (tab.getAttribute('onclick').includes(tabName)) {
-                    tab.classList.add('active', 'text-cyan-300', 'border-cyan-300');
-                } else {
-                    tab.classList.remove('active', 'text-cyan-300', 'border-cyan-300');
-                    tab.classList.add('text-gray-400');
-                }
+                const isActive = tab.getAttribute('onclick').includes(tabName);
+                tab.classList.toggle('active', isActive);
+                tab.classList.toggle('text-cyan-300', isActive);
+                tab.classList.toggle('border-cyan-300', isActive);
+                tab.classList.toggle('text-gray-400', !isActive);
+                tab.setAttribute('aria-selected', isActive);
             });
         }
         
@@ -292,7 +260,7 @@
             UI.resultPercentage.textContent = `${percentage}%`;
             
             // Gauge animation
-            const arcLength = 125.6; // Circumference of the semi-circle
+            const arcLength = 125.6;
             const dashOffset = arcLength * (1 - prediction);
             UI.gaugeArc.style.strokeDashoffset = dashOffset;
             const dialRotation = -90 + (prediction * 180);
@@ -302,18 +270,22 @@
                 UI.resultText.textContent = isSms ? 'Spam Detected' : 'Malicious URL Detected';
                 UI.resultText.className = 'text-2xl font-bold text-red-400';
                 UI.resultComment.textContent = 'High probability of being unsafe. Proceed with caution.';
-                UI.gaugeArc.style.stroke = '#F87171'; // red-400
+                UI.gaugeArc.style.stroke = '#F87171';
             } else {
                 UI.resultText.textContent = isSms ? 'Looks Safe' : 'URL Seems Safe';
                 UI.resultText.className = 'text-2xl font-bold text-green-400';
                 UI.resultComment.textContent = 'Low probability of being unsafe. Still, always be careful.';
-                UI.gaugeArc.style.stroke = '#4ADE80'; // green-400
+                UI.gaugeArc.style.stroke = '#4ADE80';
             }
         }
         
         function clearResult() {
-            UI.textInput.value = '';
             UI.resultSection.style.display = 'none';
+            UI.resultText.textContent = '';
+            UI.resultPercentage.textContent = '0%';
+            UI.resultComment.textContent = '';
+            // Optionally clear the text input as well:
+            UI.textInput.value = '';
         }
 
         // --- MODEL LOADING & PREPROCESSING ---
@@ -374,22 +346,17 @@
             if (isCharBased) {
                 tokens = text.toLowerCase().split('');
             } else {
-                // Simple whitespace and punctuation tokenizer for SMS
                 tokens = text.toLowerCase().replace(/[.,!?;:]/g, ' ').split(/\s+/).filter(Boolean);
             }
-            
             const sequence = tokens.map(token => {
                 const wordIndex = index[token];
-                return wordIndex ? wordIndex : 0; // Use 0 for unknown words/chars (padding token)
+                return wordIndex ? wordIndex : 0;
             });
-            
-            // Pad or truncate the sequence
             const paddedSequence = new Array(maxLength).fill(0);
             const start = Math.max(0, maxLength - sequence.length);
             for (let i = 0; i < Math.min(sequence.length, maxLength); i++) {
                 paddedSequence[start + i] = sequence[i];
             }
-            
             return tf.tensor2d([paddedSequence]);
         }
         
@@ -397,17 +364,13 @@
         async function analyze() {
             const inputText = UI.textInput.value.trim();
             if (!inputText) {
-                // Using a custom, non-blocking alert styled modal would be better in a real app
-                // but alert is fine for this context.
                 alert('Please enter text or a URL to analyze.');
                 return;
             }
-            
             UI.analyzeBtn.disabled = true;
             UI.analyzeBtn.textContent = 'ANALYZING...';
             UI.resultSection.style.display = 'none';
 
-            // Allow UI to update before heavy computation
             await new Promise(resolve => setTimeout(resolve, 50));
 
             try {
@@ -417,18 +380,13 @@
                 if (!config.model || !config.index) {
                     throw new Error(`${selectedModelKey.toUpperCase()} model not loaded.`);
                 }
-                
                 const isCharBased = selectedModelKey === 'url';
                 const tensor = preprocessText(inputText, config.index, config.maxLength, isCharBased);
-                
                 const predictionTensor = config.model.predict(tensor);
                 const prediction = await predictionTensor.data();
-                
                 displayResult(prediction[0]);
-
                 tensor.dispose();
                 predictionTensor.dispose();
-
             } catch(error) {
                 console.error("Analysis Error:", error);
                 alert("An error occurred during analysis. Please check the console.");
@@ -443,6 +401,5 @@
         UI.analyzeBtn.addEventListener('click', analyze);
         UI.clearBtn.addEventListener('click', clearResult);
     </script>
-
 </body>
 </html>
