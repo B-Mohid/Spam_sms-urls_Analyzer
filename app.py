@@ -23,9 +23,9 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # --- GET HTML CONTENT ---
-# Construct the path to the index.html file
-# This assumes your script `app.py` is in the root, and `index.html` is in `static/`
-frontend_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
+# Construct the path to the index.html file.
+# CORRECTED: This now correctly looks for index.html in the same directory as app.py.
+frontend_path = os.path.join(os.path.dirname(__file__), "index.html")
 
 # Read the content of the index.html file
 html_content = ""
@@ -33,7 +33,7 @@ try:
     with open(frontend_path, "r", encoding="utf-8") as f:
         html_content = f.read()
 except FileNotFoundError:
-    st.error("Frontend file not found! Ensure 'static/index.html' exists.")
+    st.error("Frontend file not found! Ensure 'index.html' is in the same directory as this script.")
 
 # --- RENDER HTML ---
 # Embed the HTML in the Streamlit app.

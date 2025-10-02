@@ -237,20 +237,23 @@
             tabContents: document.querySelectorAll('.tab-content'),
         };
 
+        // --- IMPORTANT: MODEL PATHS ---
+        // CORRECTED: Paths now point to a 'models' subdirectory.
+        // You MUST create a 'models' folder next to this HTML file and place your model assets inside it.
         const MODELS = {
             sms: {
                 model: null,
                 index: null,
-                modelPath: '../models/sms_model.json',
-                indexPath: '../models/sms_word_index.json',
+                modelPath: 'models/sms_model.json',
+                indexPath: 'models/sms_word_index.json',
                 maxLength: 150, // Typical max length for SMS
                 placeholder: 'Enter SMS message to analyze...'
             },
             url: {
                 model: null,
                 index: null,
-                modelPath: '../models/url_model.json',
-                indexPath: '../models/url_char_index.json',
+                modelPath: 'models/url_model.json',
+                indexPath: 'models/url_char_index.json',
                 maxLength: 200, // Typical max length for URLs
                 placeholder: 'Enter URL to analyze...'
             }
@@ -321,7 +324,7 @@
                 return type === 'json' ? await response.json() : response;
             } catch (error) {
                 console.error(error);
-                UI.loadingStatus.textContent = `ERROR: Could not load ${path}. Please check file paths and network.`;
+                UI.loadingStatus.textContent = `ERROR: Could not load resource at '${path}'. Please check file path and ensure the model files exist.`;
                 UI.loadingStatus.classList.add('text-red-500');
                 return null;
             }
@@ -345,7 +348,7 @@
                 ]);
 
                 if (!smsModel || !smsIndex || !urlModel || !urlIndex) {
-                    throw new Error("One or more critical resources failed to load.");
+                    throw new Error("One or more critical resources failed to load. Check console for details.");
                 }
 
                 MODELS.sms.model = smsModel;
@@ -394,6 +397,8 @@
         async function analyze() {
             const inputText = UI.textInput.value.trim();
             if (!inputText) {
+                // Using a custom, non-blocking alert styled modal would be better in a real app
+                // but alert is fine for this context.
                 alert('Please enter text or a URL to analyze.');
                 return;
             }
