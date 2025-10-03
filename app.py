@@ -2,10 +2,10 @@ import streamlit as st
 import streamlit.components.v1 as components
 import os
 
-# Set Streamlit page configuration for a wide, borderless layout
+# INSTRUCTION: Set page configuration
 st.set_page_config(layout="wide", page_title="Spam Classifier AI")
 
-# --- HIDE STREAMLIT STYLE ---
+# INSTRUCTION: Hide default Streamlit UI elements
 hide_streamlit_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -21,14 +21,16 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
+# INSTRUCTION: Define the path to the static frontend files
+# This assumes 'app.py' is in the root and 'index.html' is in './static/index.html'
+html_file_path = os.path.join(os.path.dirname(__file__), 'static', 'index.html')
 
-# --- SERVE THE STATIC FRONTEND ---
-# This now points to the 'static' directory where the index.html and models folder are located.
-# This is the standard way to serve a frontend with Streamlit components.
-frontend_dir = os.path.join(os.path.dirname(__file__), "static")
-frontend_path = os.path.join(frontend_dir, "index.html")
-
-# By setting the path for components, Streamlit can correctly serve
-# other files in that directory (like your models).
-st.components.v1.html(open(frontend_path).read(), height=1000, scrolling=False)
+# INSTRUCTION: Read and serve the HTML file
+try:
+    with open(html_file_path, 'r', encoding='utf-8') as f:
+        html_content = f.read()
+    # Embed the HTML. The browser will now correctly request assets from the /static/ path.
+    components.html(html_content, height=1000, scrolling=False)
+except FileNotFoundError:
+    st.error("CRITICAL ERROR: 'static/index.html' not found. Please verify your file structure.")
 
